@@ -1,0 +1,173 @@
+<div class="container">
+    <h1>{{ title }}</h1>
+    <div class="row">
+        <div class="col-lg-4 order-lg-last">
+            <div class="card mx-auto" style="width: 18rem;">
+                <img src="https://via.placeholder.com/1000x800.png?text=Photo non disponible" alt=""
+                     class="card-img-top" id="card_picture">
+                <div class="card-body">
+                    <h5 class="card-title" id="card_name">
+                        {% if formulaire.Nom.vars.value is not empty %}
+                            {{ formulaire.Nom.vars.value }}
+                        {% else %}
+                            Nom du chat
+                        {% endif %}
+                    </h5>
+                    <p class="card-text" id="card_sterilize">
+                        <span>{% if formulaire.Sterilise.vars.checked == true %}
+                                Stérilisé
+                            {% else %}
+                                Non stérilisé
+                            {% endif %}
+                        </span>
+                    </p>
+                    <div class="btn btn-warning disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil"
+                             viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                        </svg>
+                        Modifier</div>
+                    <div class="btn btn-danger disabled">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
+                             viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd"
+                                  d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Supprimer</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 order-lg-first">
+            {{ form_start(formulaire) }}
+            {{ form_row(formulaire.Categorie) }}
+            {{ form_row(formulaire.Nom) }}
+            {{ form_row(formulaire.Sterilise) }}
+            {{ form_label(formulaire.Photo) }}
+            <div class="input-group" id="input_photo">
+                {{ form_widget(formulaire.Photo) }}
+            </div>
+            <div class="preview row">
+                <p>Aucun fichier sélectionné pour le moment</p>
+            </div>
+            {{ form_end(formulaire) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    var input = document.querySelector('#chaton_Photo');
+    var preview = document.querySelector('.preview');
+    var button_delete = document.createElement('button');
+    button_delete.setAttribute('type', 'button');
+    button_delete.setAttribute('class', 'btn btn-danger');
+    button_delete.setAttribute('id', 'delete_picture');
+    button_delete.setAttribute('onclick', 'deletePicture()');
+    button_delete.innerHTML = 'Supprimer';
+
+    var button_rollback = document.createElement('button');
+    button_rollback.setAttribute('type', 'button');
+    button_rollback.setAttribute('class', 'btn btn-danger');
+    button_rollback.setAttribute('id', 'delete_picture');
+    button_rollback.setAttribute('onclick', 'deletePicture()');
+    button_rollback.innerHTML = 'Image initiale';
+    var input_photo = document.querySelector('#input_photo');
+    var input_group = document.querySelector('.input-group');
+
+
+    var card_name = document.querySelector('#card_name');
+    var card_sterilize = document.querySelector('#card_sterilize');
+    var card_picture = document.querySelector('#card_picture');
+
+    var input_name = document.querySelector('#chaton_Nom');
+    var input_sterilize = document.querySelector('#chaton_Sterilise');
+    var input_picture = document.querySelector('#chaton_Photo');
+
+
+    input.addEventListener('change', updateImageDisplay);
+
+    function updateImageDisplay() {
+        while (preview.firstChild) {
+            preview.removeChild(preview.firstChild);
+        }
+
+        var curFiles = input.files;
+
+        if (curFiles.length === 0) {
+            input_group.removeChild(document.querySelector('#delete_picture'));
+            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+        } else {
+            var list = document.createElement('div');
+            list.className = 'col-2 mx-auto text-center';
+            preview.appendChild(list);
+            var para = document.createElement('p');
+            input_group.appendChild(button_delete);
+            if (validFileType(curFiles[0])) {
+                para.attributes.hidden = true;
+                var image = document.createElement('img');
+                image.style.order = '1';
+                image.className = 'img-fluid';
+                image.src = window.URL.createObjectURL(curFiles[0]);
+                card_picture.src = window.URL.createObjectURL(input_picture.files[0]);
+
+                list.appendChild(image);
+                list.appendChild(para);
+
+            } else {
+                para.attributes.hidden = false;
+                card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+                para.textContent = 'Le format du fichier ' + curFiles[0].name + ' n\'est pas valide. Seuls les formats jpg, jpeg, png sont acceptés.';
+                list.appendChild(para);
+            }
+        }
+    }
+
+    var fileTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png'
+    ]
+
+    function validFileType(file) {
+        for (var i = 0; i < fileTypes.length; i++) {
+            if (file.type === fileTypes[i]) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function returnFileSize(number) {
+        if (number < 1024) {
+            return number + ' octets';
+        } else if (number >= 1024 && number < 1048576) {
+            return (number / 1024).toFixed(1) + ' Ko';
+        } else if (number >= 1048576) {
+            return (number / 1048576).toFixed(1) + ' Mo';
+        }
+    }
+
+    function deletePicture() {
+        var input = document.querySelector('#chaton_Photo');
+        input.value = '';
+        updateImageDisplay();
+    }
+
+    input_name.addEventListener('input', function () {
+        if (input_name.value === '') {
+            card_name.innerHTML = 'Nom du chat';
+        } else {
+            card_name.innerHTML = input_name.value;
+        }
+    });
+
+    input_sterilize.addEventListener('change', function () {
+        if (input_sterilize.checked) {
+            card_sterilize.innerHTML = '<span>Stérilisé</span>';
+        } else {
+            card_sterilize.innerHTML = '<span>Non stérilisé</span>';
+        }
+    });
+
+</script>

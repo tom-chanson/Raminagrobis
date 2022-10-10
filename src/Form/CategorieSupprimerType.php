@@ -8,14 +8,12 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CategorieType extends AbstractType
+class CategorieSupprimerType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('Titre')
-            ->add('Description')
-            ->add('OK',SubmitType::class, ['label'=>'OK'])
+            ->add('OK',SubmitType::class, ['label'=>'Supprimer'])
         ;
     }
 

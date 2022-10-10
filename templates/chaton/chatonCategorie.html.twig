@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chatons de la catégorie {{ categorie.titre }}{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Chatons de la catégorie {{ categorie.titre }}</h1>
+        <div class="d-flex" style="gap: 1rem; flex-wrap: wrap; justify-content: space-around">
+            {% for c in chatons %}
+                {% include "chaton/_chaton.html.twig" %}
+            {% endfor %}
+        </div>
+
+        <a class="btn btn-primary mt-5" href="{{ path("ajouter_chaton") }}">Ajouter un chaton</a>
+    </div>
+{% endblock %}
+

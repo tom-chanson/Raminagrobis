@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la catégorie{% endblock %}
+
+{% block body %}
+    {% include "chaton/_formulaireInformationChaton.html.twig" with {'title': 'Modifier ' ~ chaton.nom}%}
+{% endblock %}
