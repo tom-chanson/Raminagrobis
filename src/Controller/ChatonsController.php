@@ -9,6 +9,8 @@ use App\Form\ChatonType;
 use App\Form\CategorieSupprimerType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,9 +21,23 @@ class ChatonsController extends AbstractController
     public function ajouterChaton(ManagerRegistry $doctrine, Request $request): Response
     {
         $chaton = new Chaton();
-        $form = $this->createForm(ChatonType::class, $chaton);
+        $form = $this->createForm(ChatonType::class, $chaton, array('choiceList' => ['Fichier local' => '0', 'Internet (URL)' => '1', 'Aucune Image' => '3'], 'defaultChoice' => '3'));
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $source = $form["SourcePhoto"]->getData();
+            if ($source == 0) {
+                $file = $form['File']->getData();
+                $categorie = $chaton->getCategorie()->getId();
+                $newName = date("YmdHisu").".".$file->guessExtension();
+                $path = "Photos/".$categorie."/";
+                $file->move($path,$newName);
+                $chaton->setPhoto($newName);
+            } elseif ($source == 1) {
+                $chaton->setPhoto($form['PhotoURL']->getData());
+            } else {
+                $chaton->setPhoto(null);
+            }
             $em = $doctrine->getManager();
             //on demande à l'entityManager de sauvegarder notre objet
             $em->persist($chaton);
@@ -62,10 +78,44 @@ class ChatonsController extends AbstractController
         if (!$chaton) {
             throw $this->createNotFoundException('Aucun chaton avec l\'id ' . $id);
         }
+        $fs = new Filesystem();
 
-        $form = $this->createForm(ChatonType::class, $chaton);
+        $originalCategorie = $chaton->getCategorie()->getId();
+        $originalPhoto = $chaton->getPhoto();
+        $form = $this->createForm(ChatonType::class, $chaton, array('choiceList' => ['Fichier local' => '0', 'Internet (URL)' => '1', 'Image originale' => '2', 'Supprimer l\'image' => '3'], 'defaultChoice'=> '2'));
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $source = $form["SourcePhoto"]->getData();
+            if ($source == 0) {
+                $file = $form['File']->getData();
+                $categorie = $chaton->getCategorie()->getId();
+                $newName = date("YmdHisu").".".$file->guessExtension();
+                $path = "Photos/".$categorie."/";
+                $file->move($path,$newName);
+                $chaton->setPhoto($newName);
+            } elseif ($source == 1) {
+                $chaton->setPhoto($form['PhotoURL']->getData());
+            } elseif ($source == 3) {
+                $chaton->setPhoto(null);
+            }
+
+
+            if ( $originalCategorie != $chaton->getCategorie()->getId() && $originalPhoto != null) {
+                if ($fs->exists("Photos/".$originalCategorie."/".$originalPhoto)) {
+                    if ($source == 2){
+                        $fs->rename("Photos/".$originalCategorie."/".$originalPhoto, "Photos/".$chaton->getCategorie()->getId()."/".$originalPhoto);
+                    }
+                    else {
+                        $fs->remove("Photos/".$originalCategorie."/".$originalPhoto);
+                    }
+                }
+            } elseif ($originalCategorie == $chaton->getCategorie()->getId() && $originalPhoto != null && $source != 2) {
+                if ($fs->exists("Photos/".$originalCategorie."/".$originalPhoto)) {
+                    $fs->remove("Photos/".$originalCategorie."/".$originalPhoto);
+                }
+            }
+
             $em = $doctrine->getManager();
             //on demande à l'entityManager de sauvegarder notre objet
             $em->persist($chaton);
@@ -94,6 +144,12 @@ class ChatonsController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $fs = new Filesystem();
+            if ($fs->exists("Photos/".$chaton->getCategorie()->getId()."/".$chaton->getPhoto())) {
+                $fs->remove("Photos/".$chaton->getCategorie()->getId()."/".$chaton->getPhoto());
+            }
+
             $em = $doctrine->getManager();
             //on demande à l'entityManager de sauvegarder notre objet
             $em->remove($chaton);

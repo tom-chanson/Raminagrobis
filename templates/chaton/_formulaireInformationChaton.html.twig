@@ -22,19 +22,23 @@
                         </span>
                     </p>
                     <div class="btn btn-warning disabled">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-pencil"
                              viewBox="0 0 16 16">
                             <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
                         </svg>
-                        Modifier</div>
+                        Modifier
+                    </div>
                     <div class="btn btn-danger disabled">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-trash"
                              viewBox="0 0 16 16">
                             <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                             <path fill-rule="evenodd"
                                   d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                         </svg>
-                        Supprimer</div>
+                        Supprimer
+                    </div>
                 </div>
             </div>
         </div>
@@ -43,20 +47,37 @@
             {{ form_row(formulaire.Categorie) }}
             {{ form_row(formulaire.Nom) }}
             {{ form_row(formulaire.Sterilise) }}
-            {{ form_label(formulaire.Photo) }}
-            <div class="input-group" id="input_photo">
-                {{ form_widget(formulaire.Photo) }}
+            <div class="mb-3" style="height: min-content">
+                <label>Image</label>
+            {{ form_widget(formulaire.SourcePhoto) }}
             </div>
-            <div class="preview row">
-                <p>Aucun fichier sélectionné pour le moment</p>
+            <div id="fileLocal">
+                <div class="input-group has-validation">
+                    {{ form_widget(formulaire.File) }}
+                    <div class="invalid-feedback">
+                        L'image doit être au format JPEG, PNG, GIF, SVG, WEBP ou APNG.
+                    </div>
+                </div>
+                <div class="preview row">
+                    <p>Aucun fichier sélectionné pour le moment</p>
+                </div>
             </div>
+            <div id="imageURL">
+                {{ form_row(formulaire.PhotoURL) }}
+            </div>
+            {{ form_widget(formulaire.Photo) }}
             {{ form_end(formulaire) }}
         </div>
     </div>
 </div>
 
 <script>
-    var input = document.querySelector('#chaton_Photo');
+    var imagePathInitial = "{{ formulaire.Photo.vars.value }}";
+    var inputPhoto = document.querySelector("#chaton_Photo");
+    var inputFile = document.querySelector('#chaton_File');
+    var localFile = document.querySelector('#fileLocal');
+    var imageURL = document.querySelector('#imageURL');
+    var inputURL = document.querySelector('#chaton_PhotoURL');
     var preview = document.querySelector('.preview');
     var button_delete = document.createElement('button');
     button_delete.setAttribute('type', 'button');
@@ -71,45 +92,85 @@
     button_rollback.setAttribute('id', 'delete_picture');
     button_rollback.setAttribute('onclick', 'deletePicture()');
     button_rollback.innerHTML = 'Image initiale';
-    var input_photo = document.querySelector('#input_photo');
     var input_group = document.querySelector('.input-group');
-
 
     var card_name = document.querySelector('#card_name');
     var card_sterilize = document.querySelector('#card_sterilize');
     var card_picture = document.querySelector('#card_picture');
-
     var input_name = document.querySelector('#chaton_Nom');
     var input_sterilize = document.querySelector('#chaton_Sterilise');
-    var input_picture = document.querySelector('#chaton_Photo');
+    var radioButtonGroup = document.getElementsByName("chaton[SourcePhoto]");
+    var checkedRadio = Array.from(radioButtonGroup).find(
+        (radio) => radio.checked
+    );
+    for (var i = 0; i < radioButtonGroup.length; i++) {
+        radioButtonGroup[i].addEventListener('change', function () {
+            radioButtonChange(this.value);
+            checkedRadio = this.value;
+        });
+    }
 
 
-    input.addEventListener('change', updateImageDisplay);
+    radioButtonChange(checkedRadio.value);
+
+    function radioButtonChange(radioValue) {
+        if (radioValue === '0') {
+            cardImageFile()
+            localFile.hidden = false;
+            inputFile.required = true;
+        } else {
+            localFile.hidden = true;
+            inputFile.required = false;
+        }
+        if (radioValue === '1') {
+            cardImageUrl();
+            imageURL.hidden = false;
+            inputURL.required = true;
+        } else {
+            imageURL.hidden = true;
+            inputURL.required = false;
+        }
+        if (radioValue ==='2') {
+            initialImage();
+        } else if (radioValue === '3') {
+            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+        }
+        checkedRadio = radioValue;
+    }
+
+
+
+    // Preview image
+    inputFile.addEventListener('change', updateImageDisplay);
+
+
+    function isImgLink(url) {
+        if(typeof url !== 'string') return false;
+        return(url.match("^((http|https)://)(www[.])?([a-zA-Z0-9]|-)+([.][a-zA-Z0-9(-|/|=|?)?]+)+$") != null);
+    }
+
 
     function updateImageDisplay() {
+        var curFiles = inputFile.files;
         while (preview.firstChild) {
             preview.removeChild(preview.firstChild);
         }
-
-        var curFiles = input.files;
-
         if (curFiles.length === 0) {
             input_group.removeChild(document.querySelector('#delete_picture'));
-            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+            cardImageFile()
         } else {
             var list = document.createElement('div');
             list.className = 'col-2 mx-auto text-center';
             preview.appendChild(list);
             var para = document.createElement('p');
             input_group.appendChild(button_delete);
+            cardImageFile()
             if (validFileType(curFiles[0])) {
                 para.attributes.hidden = true;
                 var image = document.createElement('img');
                 image.style.order = '1';
                 image.className = 'img-fluid';
                 image.src = window.URL.createObjectURL(curFiles[0]);
-                card_picture.src = window.URL.createObjectURL(input_picture.files[0]);
-
                 list.appendChild(image);
                 list.appendChild(para);
 
@@ -124,8 +185,11 @@
 
     var fileTypes = [
         'image/jpeg',
-        'image/jpg',
-        'image/png'
+        'image/png',
+        'image/gif',
+        'image/svg+xml',
+        'image/webp',
+        'image/apng'
     ]
 
     function validFileType(file) {
@@ -134,7 +198,6 @@
                 return true;
             }
         }
-
         return false;
     }
 
@@ -149,10 +212,10 @@
     }
 
     function deletePicture() {
-        var input = document.querySelector('#chaton_Photo');
-        input.value = '';
+        inputFile.value = '';
         updateImageDisplay();
     }
+    // End preview image
 
     input_name.addEventListener('input', function () {
         if (input_name.value === '') {
@@ -163,11 +226,61 @@
     });
 
     input_sterilize.addEventListener('change', function () {
+        var sterilize = document.querySelector('label[for="chaton_Sterilise"]');
         if (input_sterilize.checked) {
+            sterilize.innerHTML = 'Stérilisé';
             card_sterilize.innerHTML = '<span>Stérilisé</span>';
         } else {
+            sterilize.innerHTML = 'Non stérilisé';
             card_sterilize.innerHTML = '<span>Non stérilisé</span>';
         }
     });
+    inputURL.addEventListener('input', cardImageUrl);
+
+    function cardImageUrl () {
+        if (isImgLink(inputURL.value)) {
+            card_picture.src = inputURL.value;
+            inputPhoto.value = inputURL.value;
+        } else {
+            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+        }
+    };
+
+    function cardImageFile () {
+        var curFiles = inputFile.files;
+        if (curFiles.length === 0 || !validFileType(curFiles[0])) {
+            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+        } else {
+            card_picture.src = window.URL.createObjectURL(curFiles[0]);
+        }
+    };
+
+
+    function initialImage () {
+        if (isImgLink('{{ formulaire.Photo.vars.value }}')) {
+            console.log("isImgLink");
+            card_picture.src = '{{ formulaire.Photo.vars.value }}';
+        }else if ('{{ formulaire.Photo.vars.value }}' != null && '{{ formulaire.Photo.vars.value }}' !== '') {
+            card_picture.src = '{{ asset('Photos/'~formulaire.Categorie.vars.value~"/"~formulaire.Photo.vars.value) }}';
+            console.log("isImgLocal");
+        } else {
+            card_picture.src = 'https://via.placeholder.com/1000x800.png?text=Photo non disponible';
+        }
+        return null;
+    }
+
+    button_submit = document.querySelector('#chaton_OK');
+    form = document.querySelector('form[name="chaton"]');
+
+    form.addEventListener('submit', function (e) {
+        console.log('submit');
+        if (checkedRadio !== '1'){
+            inputURL.value = '';
+        }
+        if(checkedRadio !== '0'){
+            inputFile.value = '';
+            console.log("clear file");
+        }
+    })
 
 </script>

@@ -1,15 +1,15 @@
-<div class="card" style="width: 18rem;">
+<div class="card" style="width: 18rem">
     {% if c.photo=='' %}
         <img src="https://via.placeholder.com/1000x800.png?text=Photo non disponible" alt=""
              class="card-img-top">
     {% else %}
-        <a href="{{ c.photo }}" data-fancybox="gallery"
+        <a href="{{ c.nom }}" data-fancybox="gallery"
            data-caption="{{ c.nom }}">
-            <img src="{{ c.photo }}" alt=""
+            <img src="{{ (c.photo matches '^((http|https):\/\/)(www[.])?([a-zA-Z0-9]|-)+([.][a-zA-Z0-9(-|\/|=|?)?]+)+$^') ? c.photo : asset("Photos/"~c.categorie.id~"/"~c.photo) }}" alt=""
                  class="card-img-top image_gallery">
         </a>
     {% endif %}
-    <div class="card-body">
+    <div class="card-body"  >
         <h5 class="card-title">{{ c.nom }}</h5>
         <p class="card-text">
             {% if c.sterilise=='1' %}

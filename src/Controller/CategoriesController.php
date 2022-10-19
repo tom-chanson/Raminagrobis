@@ -7,6 +7,7 @@ use App\Form\CategorieSupprimerType;
 use App\Form\CategorieType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -124,6 +125,11 @@ class CategoriesController extends AbstractController
             $em->remove($categorie);
             //on demande à l'entityManager d'exécuter les requêtes
             $em->flush();
+
+            $fs = new Filesystem();
+            if ($fs->exists('Photos/'.$id)){
+                $fs->remove('Photos/' . $id);
+            }
 
             //retour à la page d'accueil
             return $this->redirectToRoute('app_home');
