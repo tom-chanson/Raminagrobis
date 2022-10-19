@@ -5,6 +5,11 @@
 {% block body %}
     <div class="container">
         <h1>Gestion des chatons BDD</h1>
+        {% if (categories==[]) %}
+        <div class="text-center py-4 my-4 alert alert-secondary">
+            <span class="mx-auto">Aucune catégorie enregistré</span>
+        </div>
+        {% else %}
         <table class="table table-striped">
             <tr>
                 <th>Titre</th>
@@ -37,6 +42,7 @@
                     </td>
                 </tr>
             {% endfor %}
+            {% endif %}
         </table>
 
         <h2>Ajouter une catégorie</h2>

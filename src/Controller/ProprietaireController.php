@@ -84,18 +84,4 @@ class ProprietaireController extends AbstractController
             'proprietaire' => $proprietaire,
         ]);
     }
-
-    #[Route('/proprietaire/chaton/{id}', name: 'proprietaire_chatons')]
-    public function chatonProprietaire($id, ManagerRegistry $doctrine, Request $request): Response
-    {
-        $proprietaire = $doctrine->getRepository(Proprietaire::class)->find($id);
-        if (!$proprietaire) {
-            throw $this->createNotFoundException(
-                'Aucun proprietaire trouvé pour cet id : '.$id
-            );
-        }
-        return $this->render('proprietaire/chatons.html.twig', [
-            'proprietaire' => $proprietaire,
-        ]);
-    }
 }

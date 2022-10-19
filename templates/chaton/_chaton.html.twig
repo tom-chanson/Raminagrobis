@@ -1,6 +1,6 @@
 <div class="card" style="width: 18rem">
     {% if c.photo=='' %}
-        <img src="https://via.placeholder.com/1000x800.png?text=Photo non disponible" alt=""
+        <img src="{{ asset('Photos/no_picture.png') }}" alt=""
              class="card-img-top">
     {% else %}
         <a href="{{ c.nom }}" data-fancybox="gallery"

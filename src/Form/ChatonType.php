@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Entity\Categorie;
 use App\Entity\Chaton;
+use App\Entity\Proprietaire;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -24,7 +25,10 @@ class ChatonType extends AbstractType
     {
         $builder
             ->add('Nom')
-            ->add('Sterilise')
+            ->add('Sterilise', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Stérilisé',
+            ])
             ->add('SourcePhoto', ChoiceType::class, [
                 'choices' => $options['choiceList'],
                 'expanded' => true,
@@ -82,6 +86,14 @@ class ChatonType extends AbstractType
                 'multiple' => false, //choix multiple ou non
                 'expanded' => false, //liste déroulante ou non (boutons radio),
                 'placeholder' => 'Choisissez une catégorie', //texte par défaut
+            ])
+            ->add('proprietaire_id', EntityType::class, [
+                'class' => Proprietaire::class, //choix de la classe liée
+                'choice_label' => 'nom', //choix de ce qui sera affiché comme texte
+                'multiple' => true, //choix multiple ou non
+                'expanded' => true, //liste déroulante ou non (boutons radio),
+                'placeholder' => 'Choisissez un propriétaire', //texte par défaut
+                'label' => 'Propriétaire(s):',
             ])
             ->add('OK',SubmitType::class, ['label'=>'OK'])
         ;
