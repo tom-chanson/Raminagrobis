@@ -89,7 +89,6 @@ class ChatonType extends AbstractType
             ])
             ->add('proprietaire_id', EntityType::class, [
                 'class' => Proprietaire::class, //choix de la classe liée
-                'choice_label' => 'nom', //choix de ce qui sera affiché comme texte
                 'multiple' => true, //choix multiple ou non
                 'expanded' => true, //liste déroulante ou non (boutons radio),
                 'placeholder' => 'Choisissez un propriétaire', //texte par défaut
